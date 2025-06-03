@@ -4,14 +4,14 @@ const isExport = process.env.npm_lifecycle_event === "build";
 
 const withPWA = require("next-pwa")({
   dest: "public",
-  disable: isExport,
+  disable: false,
   register: true,
   skipWaiting: true,
 });
 
 const nextConfig = {
   reactStrictMode: true,
-  output: "export",
+  // output: "",
 };
 
 module.exports = withPWA(nextConfig);
