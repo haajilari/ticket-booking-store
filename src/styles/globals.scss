@@ -1,0 +1,61 @@
+// src/styles/globals.scss
+
+@use "variables" as *;
+
+// Reset and Reassign Default Configs
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: $font-family-base;
+  color: $text-color;
+  background-color: #f4f7f6;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: $link-color;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.container {
+  width: 100%;
+  padding-right: $container-padding;
+  padding-left: $container-padding;
+  margin-right: auto;
+  margin-left: auto;
+
+  @media (min-width: $breakpoint-sm) {
+    max-width: 540px;
+  }
+  @media (min-width: $breakpoint-md) {
+    max-width: 720px;
+  }
+  @media (min-width: $breakpoint-lg) {
+    max-width: 960px;
+  }
+  @media (min-width: $breakpoint-xl) {
+    max-width: 1140px;
+  }
+}
