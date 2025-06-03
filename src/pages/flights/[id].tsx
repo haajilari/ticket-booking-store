@@ -1,7 +1,7 @@
 // src/pages/flights/[id].tsx
 import Head from "next/head";
 import { GetServerSideProps } from "next";
-import { FlightTicket, TicketType } from "@/types/ticket";
+import { FlightTicket } from "@/types/ticket";
 import styles from "@/styles/pages/TicketDetails.module.scss";
 import Link from "next/link";
 import { JSX } from "react";
@@ -30,6 +30,7 @@ const formatDetailedDateTime = (dateString?: string): string => {
       day: "numeric",
     })}, ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
   } catch (e) {
+    console.log({ e });
     return "Invalid date format";
   }
 };
@@ -40,7 +41,7 @@ const formatDetailedDateTime = (dateString?: string): string => {
  * @param {FlightDetailPageProps} props - Page properties.
  * @returns {JSX.Element} The flight details page.
  */
-const FlightDetailPage = ({ flight, error }: FlightDetailPageProps): JSX.Element => {
+const FlightDetailPage = ({ flight }: FlightDetailPageProps): JSX.Element => {
   const { bookingStatus, bookingError, resetBookingState, ticketForBooking } =
     useBookingStore();
   // to prepare for the next booking, unless a booking is in progress.
