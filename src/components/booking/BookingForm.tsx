@@ -1,192 +1,177 @@
 // src/components/booking/BookingForm.tsx
-import React, { useState, FormEvent, JSX } from "react";
+import React, { useState, FormEvent, useEffect, JSX } from "react";
 import styles from "./BookingForm.module.scss";
+import { useBookingStore } from "@/store/bookingStore";
+import { Ticket } from "@/types/ticket";
 
-// Define form data interface
-interface BookingFormData {
-  ticketId: string;
+interface LocalFormData {
   name: string;
   email: string;
-  quantity: number;
+  // quantity is no longer in the local form state, it is read from the store
 }
 
-// Define component properties (currently no specific props needed, but can be added for future use)
 interface BookingFormProps {
-  ticketId: string; // ID of the ticket being booked
-  ticketName: string; // Name or identifier of the ticket to display in the form
-  onSubmitSuccess: (data: BookingFormData) => void; // Callback function triggered after successful form submission
+  ticket: Ticket;
+  initialQuantity?: number;
+  // onSubmitSuccess is no longer needed, success state is read from the store
 }
 
-/**
- * @description Component for the booking form to reserve a ticket.
- * Includes fields for name, email, and ticket quantity.
- * Uses local state to manage form data.
- * @param {BookingFormProps} props - Component properties.
- * @returns {JSX.Element} The booking form.
- */
-const BookingForm = ({
-  ticketId,
-  ticketName,
-  onSubmitSuccess,
-}: BookingFormProps): JSX.Element => {
-  const [formData, setFormData] = useState<BookingFormData>({
-    ticketId: "",
-    name: "",
-    email: "",
-    quantity: 1,
+const BookingForm = ({ ticket, initialQuantity = 1 }: BookingFormProps): JSX.Element => {
+  // Store-related state
+  const {
+    setTicketForBooking,
+    updateUserInfo,
+    submitBooking,
+    bookingStatus,
+    bookingError,
+    resetBookingState,
+  } = useBookingStore();
+
+  // Local state for form fields and local errors
+  const [localFormData, setLocalFormData] = useState<LocalFormData>({
+    name: useBookingStore.getState().userInfo?.name || "", // Initial value from store if it exists
+    email: useBookingStore.getState().userInfo?.email || "",
   });
+  const [localQuantity, setLocalQuantity] = useState<number>(
+    useBookingStore.getState().ticketForBooking?.id === ticket.id
+      ? useBookingStore.getState().quantity
+      : initialQuantity
+  );
+  const [localErrors, setLocalErrors] = useState<{ [key: string]: string }>({});
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // When the component mounts or the ticket changes, set the ticket in the store
+  useEffect(() => {
+    if (useBookingStore.getState().ticketForBooking?.id !== ticket.id) {
+      setTicketForBooking(ticket, localQuantity);
+    }
+    // If the user leaves and returns, we don’t reset the form state unless explicitly requested
+    // return () => {
+    //   if (bookingStatus !== 'succeeded') { // If booking was not successful, we might want to retain the state
+    //      resetBookingState(); // Or part of it
+    //   }
+    // };
+  }, [ticket, localQuantity, setTicketForBooking, bookingStatus]);
 
-  /**
-   * @description Handles changes in form input fields.
-   * @param {React.ChangeEvent<HTMLInputElement | HTMLSelectElement>} e - Change event.
-   */
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      // If the type is numeric, convert the value to a number
-      [name]: type === "number" ? parseInt(value, 10) : value,
-    }));
-    // Clear error when the user starts typing
-    if (errors[name]) {
-      setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLocalFormData((prevData) => ({ ...prevData, [name]: value }));
+    if (localErrors[name]) {
+      setLocalErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
     }
   };
 
-  /**
-   * @description Validates the form.
-   * @returns {boolean} Whether the form is valid or not.
-   */
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuantity = parseInt(e.target.value, 10) || 1;
+    setLocalQuantity(newQuantity);
+    if (useBookingStore.getState().ticketForBooking?.id === ticket.id) {
+      useBookingStore.setState({ quantity: newQuantity });
+    }
+    if (localErrors.quantity) {
+      setLocalErrors((prevErrors) => ({ ...prevErrors, quantity: "" }));
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required.";
-    }
-    if (!formData.email.trim()) {
+    if (!localFormData.name.trim()) newErrors.name = "Name is required.";
+    if (!localFormData.email.trim()) {
       newErrors.email = "Email is required.";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    } else if (!/\S+@\S+\.\S+/.test(localFormData.email)) {
       newErrors.email = "Invalid email format.";
     }
-    if (formData.quantity < 1) {
-      newErrors.quantity = "Ticket quantity must be at least 1.";
-    } else if (formData.quantity > 10) {
-      // Sample restriction
+    if (localQuantity < 1) newErrors.quantity = "Ticket quantity must be at least 1.";
+    else if (localQuantity > 10)
       newErrors.quantity = "Maximum ticket quantity allowed is 10.";
-    }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0; // Returns true if there are no errors
+    setLocalErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * @description Handles form submission.
-   * @param {FormEvent<HTMLFormElement>} e - Form submission event.
-   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Prevent default form submission and page refresh
-    if (!validateForm()) {
-      return; // If the form is invalid, do not proceed
-    }
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    setIsSubmitting(true);
-    console.log("Form data for submission:", { ...formData, ticketId });
+    // Update user information in the store
+    updateUserInfo({ name: localFormData.name, email: localFormData.email });
+    // Ensure the ticket and quantity are correctly set in the store before submit
+    // (the user might have changed the quantity)
+    setTicketForBooking(ticket, localQuantity);
 
-    // Simulate submission to a server
-    // In the next module, this section will be converted to a real API call.
-    try {
-      // Imagine we have a function here to submit data to an API
-      // await submitBookingApi({ ...formData, ticketId });
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network delay
-      let ticketId: string = "unique_id"; //Suppose to be Dynamic ID
-      // After successful submission
-      onSubmitSuccess({ ...formData, ticketId }); // Send form data to parent
-      // Reset the form (optional)
-      setFormData({ name: "", email: "", quantity: 1, ticketId });
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        form: "Error in booking process. Please try again.",
-      }));
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Call the submit action from the store
+    await submitBooking();
   };
+
+  // If booking was successful, we could hide the form or display a different success message
+  // This is better managed in the parent component (details page).
+  // However, we can display the general error from the store here.
 
   return (
     <div className={styles.bookingFormContainer}>
-      <h3>Book Ticket for: {ticketName}</h3>
+      <h3>
+        Book Ticket for: {ticket.companyName} ({ticket.origin} to {ticket.destination})
+      </h3>
       <form onSubmit={handleSubmit} className={styles.form} noValidate>
+        {/* Name */}
         <div className={styles.formGroup}>
           <label htmlFor="name">Full Name:</label>
           <input
             type="text"
             id="name"
             name="name"
-            value={formData.name}
+            value={localFormData.name}
             onChange={handleChange}
-            className={errors.name ? styles.errorInput : ""}
-            aria-describedby="nameError"
-            required
+            className={localErrors.name ? styles.errorInput : ""}
           />
-          {errors.name && (
-            <span id="nameError" className={styles.errorMessage}>
-              {errors.name}
-            </span>
+          {localErrors.name && (
+            <span className={styles.errorMessage}>{localErrors.name}</span>
           )}
         </div>
-
+        {/* Email */}
         <div className={styles.formGroup}>
           <label htmlFor="email">Email Address:</label>
           <input
             type="email"
             id="email"
             name="email"
-            value={formData.email}
+            value={localFormData.email}
             onChange={handleChange}
-            className={errors.email ? styles.errorInput : ""}
-            aria-describedby="emailError"
-            required
+            className={localErrors.email ? styles.errorInput : ""}
           />
-          {errors.email && (
-            <span id="emailError" className={styles.errorMessage}>
-              {errors.email}
-            </span>
+          {localErrors.email && (
+            <span className={styles.errorMessage}>{localErrors.email}</span>
           )}
         </div>
-
+        {/* Quantity */}
         <div className={styles.formGroup}>
           <label htmlFor="quantity">Ticket Quantity:</label>
           <input
             type="number"
             id="quantity"
             name="quantity"
-            value={formData.quantity}
-            onChange={handleChange}
+            value={localQuantity}
+            onChange={handleQuantityChange}
             min="1"
-            max="10" // Sample restriction
-            className={errors.quantity ? styles.errorInput : ""}
-            aria-describedby="quantityError"
-            required
+            max="10"
+            className={localErrors.quantity ? styles.errorInput : ""}
           />
-          {errors.quantity && (
-            <span id="quantityError" className={styles.errorMessage}>
-              {errors.quantity}
-            </span>
+          {localErrors.quantity && (
+            <span className={styles.errorMessage}>{localErrors.quantity}</span>
           )}
         </div>
 
-        {errors.form && (
+        {/* Display general error from store if it exists */}
+        {bookingStatus === "failed" && bookingError && (
           <p className={`${styles.errorMessage} ${styles.formSubmissionError}`}>
-            {errors.form}
+            {bookingError}
           </p>
         )}
 
-        <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Confirm Booking"}
+        <button
+          type="submit"
+          className={styles.submitButton}
+          disabled={bookingStatus === "loading"}
+        >
+          {bookingStatus === "loading" ? "Submitting..." : "Confirm Booking"}
         </button>
       </form>
     </div>

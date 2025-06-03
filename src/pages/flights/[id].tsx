@@ -2,14 +2,15 @@
 import Head from "next/head";
 import { GetServerSideProps } from "next";
 import { FlightTicket, TicketType } from "@/types/ticket";
-import styles from "@/styles/pages/TicketDetails.module.scss"; // A style file for ticket details
+import styles from "@/styles/pages/TicketDetails.module.scss";
 import Link from "next/link";
 import { JSX } from "react";
-import BookingForm from "@/components/booking/BookingForm"; // Import the BookingForm component
-import { useState } from "react"; // For managing success message state
+import BookingForm from "@/components/booking/BookingForm";
+import { useBookingStore } from "@/store/bookingStore";
+import { useEffect } from "react";
 
 interface FlightDetailPageProps {
-  flight?: FlightTicket; // Ticket can be optional in case of an error
+  flight?: FlightTicket;
   error?: string;
 }
 
@@ -40,12 +41,24 @@ const formatDetailedDateTime = (dateString?: string): string => {
  * @returns {JSX.Element} The flight details page.
  */
 const FlightDetailPage = ({ flight, error }: FlightDetailPageProps): JSX.Element => {
-  const [bookingSuccessMessage, setBookingSuccessMessage] = useState<string | null>(null); // New state for booking success message
-  if (error) {
+  const { bookingStatus, bookingError, resetBookingState, ticketForBooking } =
+    useBookingStore();
+  // to prepare for the next booking, unless a booking is in progress.
+  useEffect(() => {
+    return () => {
+      // Reset only if the booking is not in progress or pertains to a different ticket
+      if (bookingStatus !== "loading") {
+        // resetBookingState(); // This might be too early if the user wants to see the success message
+      }
+    };
+  }, [bookingStatus, resetBookingState]);
+  if (bookingError) {
     return (
       <div className={`container ${styles.detailsContainer}`}>
         <h1 className={styles.pageTitleError}>Error</h1>
-        <p className={styles.errorMessage}>Unable to load flight details: {error}</p>
+        <p className={styles.errorMessage}>
+          Unable to load flight details: {bookingError}
+        </p>
         <Link href="/flights" legacyBehavior>
           <a className={styles.backLink}>Back to Flights List</a>
         </Link>
@@ -66,21 +79,9 @@ const FlightDetailPage = ({ flight, error }: FlightDetailPageProps): JSX.Element
       </div>
     );
   }
-  /**
-   * @description Function executed after a successful booking form submission.
-   */
-  const handleBookingSuccess = (data: {
-    name: string;
-    email: string;
-    quantity: number;
-    ticketId: string;
-  }) => {
-    console.log("Booking successful! Data:", data);
-    setBookingSuccessMessage(
-      `Your booking for ${data.quantity} ticket(s) has been successfully (simulated) registered. A confirmation email will be sent to ${data.email}.`
-    );
-    // Here, you could redirect the user to a thank-you page or perform other actions.
-  };
+
+  // Check if the success/error message pertains to the current ticket booking attempt
+  const isCurrentTicketBookingAttempt = ticketForBooking?.id === flight.id;
   return (
     <>
       <Head>
@@ -134,30 +135,64 @@ const FlightDetailPage = ({ flight, error }: FlightDetailPageProps): JSX.Element
               <span className={styles.value}>{flight.gate}</span>
             </div>
           )}
-          {/* Additional flight information can be displayed here */}
         </section>
-        {/* New section: Booking form */}
-        {bookingSuccessMessage ? (
+
+        {/* Display form or success/error message based on store state */}
+        {isCurrentTicketBookingAttempt && bookingStatus === "succeeded" ? (
           <div className={styles.successMessageContainer}>
-            {" "}
-            {/* Add styles for this class */}
             <h3>Booking Successful!</h3>
-            <p>{bookingSuccessMessage}</p>
-            <Link href="/" legacyBehavior>
-              <a className={styles.backLink}>Back to Homepage</a>
-            </Link>
+            <p>
+              Your booking for the {flight.companyName} ticket has been successfully
+              (simulated) registered.
+            </p>
+            <button
+              onClick={() => {
+                resetBookingState();
+                // We might want to navigate to the homepage or ticket list
+                // router.push('/');
+              }}
+              className={styles.backLink}
+              style={{
+                background: "#1DA1F2",
+                color: "white",
+                padding: "0.5em 1em",
+                borderRadius: "4px",
+                border: "none",
+              }}
+            >
+              Start New Booking
+            </button>
           </div>
         ) : (
-          <BookingForm
-            ticketId={flight.id}
-            ticketName={`${flight.companyName} (${flight.origin} to ${flight.destination})`}
-            onSubmitSuccess={handleBookingSuccess}
-          />
+          <>
+            <BookingForm
+              ticket={flight}
+              initialQuantity={
+                flight.id === useBookingStore.getState().ticketForBooking?.id
+                  ? useBookingStore.getState().quantity
+                  : 1
+              }
+            />
+            {/* Display booking error from store if it pertains to this ticket */}
+            {isCurrentTicketBookingAttempt &&
+              bookingStatus === "failed" &&
+              bookingError && (
+                <p
+                  className={`${styles.errorMessage} ${styles.formSubmissionError}`}
+                  style={{ marginTop: "1rem" }}
+                >
+                  Booking Error: {bookingError}
+                </p>
+              )}
+          </>
         )}
-        {/* End of booking form section */}
-        {!bookingSuccessMessage && (
-          <div className={styles.actions}>
-            {/* The previous booking button is no longer needed here since the form has its own button */}
+
+        {/* Back link if booking is not successful or not yet completed */}
+        {!(isCurrentTicketBookingAttempt && bookingStatus === "succeeded") && (
+          <div
+            className={styles.actions}
+            style={{ visibility: bookingStatus === "loading" ? "hidden" : "visible" }}
+          >
             <Link href="/flights" legacyBehavior>
               <a className={styles.backLink} style={{ marginTop: "1rem" }}>
                 Back to Flights List
