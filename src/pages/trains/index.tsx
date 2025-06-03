@@ -56,7 +56,7 @@ const TrainsPage = ({ trains, error }: TrainsPageProps): JSX.Element => {
 };
 
 export const getServerSideProps: GetServerSideProps<TrainsPageProps> = async (
-  context
+  _context
 ) => {
   try {
     // Base API URL - in a real application, this should be read from environment variables
