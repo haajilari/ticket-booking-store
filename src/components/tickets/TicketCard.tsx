@@ -69,9 +69,15 @@ const TicketCard = ({ ticket }: TicketCardProps): JSX.Element => {
         </p>
         {getTicketSpecificDetails()}
       </div>
-      <Link href={`/${ticket.type}s/${ticket.id}`} legacyBehavior>
-        <a className={styles.detailsLink}>View Details and Purchase</a>
-      </Link>
+      {ticket.type === "bus" ? (
+        <Link href={`/${ticket.type}es/${ticket.id}`} legacyBehavior>
+          <a className={styles.detailsLink}>View Details and Purchase</a>
+        </Link>
+      ) : (
+        <Link href={`/${ticket.type}s/${ticket.id}`} legacyBehavior>
+          <a className={styles.detailsLink}>View Details and Purchase</a>
+        </Link>
+      )}
     </div>
   );
 };
