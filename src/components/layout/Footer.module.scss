@@ -1,0 +1,15 @@
+// src/components/layout/Footer.module.scss
+@use "@/styles/variables" as *;
+
+.footer {
+  background-color: #343a40;
+  color: $text-color-light;
+  padding: 2rem 0;
+  text-align: center;
+  margin-top: 2rem;
+
+  p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+}
