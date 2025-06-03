@@ -1,30 +1,44 @@
 // src/pages/trains/index.tsx
-import Head from 'next/head';
-import { GetServerSideProps } from 'next';
-import TicketCard from '@/components/tickets/TicketCard';
-import { TrainTicket, TicketType } from '@/types/ticket';
-import styles from '@/styles/pages/Listing.module.scss';
-import { JSX } from 'react';
+import Head from "next/head";
+import { GetServerSideProps } from "next";
+import TicketCard from "@/components/tickets/TicketCard";
+import { TrainTicket } from "@/types/ticket"; // TicketType is not needed here directly
+import styles from "@/styles/pages/Listing.module.scss";
+import { JSX } from "react";
 
 interface TrainsPageProps {
   trains: TrainTicket[];
+  error?: string; // For displaying errors if an issue occurs
 }
 
 /**
- * @description Train list page component.
- * This page is rendered using Server-Side Rendering (SSR) with getServerSideProps.
+ * @description Component for the trains list page.
+ * This page is rendered server-side using getServerSideProps and fetches data from the API.
  * @param {TrainsPageProps} props - Properties received from getServerSideProps.
- * @returns {JSX.Element} Train list page.
+ * @returns {JSX.Element} The trains list page.
  */
-const TrainsPage = ({ trains }: TrainsPageProps): JSX.Element => {
+const TrainsPage = ({ trains, error }: TrainsPageProps): JSX.Element => {
+  if (error) {
+    return (
+      <div className={`container ${styles.listingContainer}`}>
+        <h1 className={styles.pageTitle}>✈️ Trains List</h1>
+        <p className={styles.noResults}>Error fetching data: {error}</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
         <title>Trains List | Ticket Store</title>
-        <meta name="description" content="Search and view the list of available trains." />
+        <meta
+          name="description"
+          content="Search and view the list of available trains."
+        />
       </Head>
+
       <div className={`container ${styles.listingContainer}`}>
-        <h1 className={styles.pageTitle}>🚆 Trains List</h1>
+        <h1 className={styles.pageTitle}>✈️ Trains List</h1>
         {trains.length > 0 ? (
           <div className={styles.ticketList}>
             {trains.map((train) => (
@@ -32,82 +46,47 @@ const TrainsPage = ({ trains }: TrainsPageProps): JSX.Element => {
             ))}
           </div>
         ) : (
-          <p className={styles.noResults}>No trains available to display at the moment.</p>
+          <p className={styles.noResults}>
+            No trains available to display at the moment.
+          </p>
         )}
       </div>
     </>
   );
 };
 
-// Mock data for trains (in a real application, this would be fetched from an API)
-const mockTrains: TrainTicket[] = [
-  {
-    id: 't789',
-    type: TicketType.Train,
-    origin: 'Tehran',
-    destination: 'Yazd',
-    departureTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(), // Four days later
-    arrivalTime: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000 + 7 * 60 * 60 * 1000).toISOString(), // Seven hours after departure
-    price: 850000,
-    currency: 'Toman',
-    companyName: 'Raja',
-    trainNumber: 'T101',
-    seatClass: '4-Bed Special',
-  },
-  {
-    id: 't790',
-    type: TicketType.Train,
-    origin: 'Mashhad',
-    destination: 'Shiraz',
-    departureTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), // Five days later
-    arrivalTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000).toISOString(), // Ten hours after departure
-    price: 1200000,
-    currency: 'Toman',
-    companyName: 'Fadak',
-    trainNumber: 'T202',
-    seatClass: '5-Star Luxury',
-  },
-  {
-    id: 't791',
-    type: TicketType.Train,
-    origin: 'Isfahan',
-    destination: 'Bandar Abbas',
-    departureTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // Three days later
-    arrivalTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000).toISOString(), // Twelve hours after departure
-    price: 950000,
-    currency: 'Toman',
-    companyName: 'Raja',
-    trainNumber: 'T303',
-    seatClass: '6-Bed Economy',
-  },
-  {
-    id: 't792',
-    type: TicketType.Train,
-    origin: 'Tabriz',
-    destination: 'Tehran',
-    departureTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // Two days later
-    arrivalTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000).toISOString(), // Eight hours after departure
-    price: 700000,
-    currency: 'Toman',
-    companyName: 'Fadak',
-    trainNumber: 'T404',
-    seatClass: '4-Bed Standard',
-  },
-];
+export const getServerSideProps: GetServerSideProps<TrainsPageProps> = async (
+  context
+) => {
+  try {
+    // Base API URL - in a real application, this should be read from environment variables
+    // On the server, we can use localhost and the application's port
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+    const response = await fetch(`${apiBaseUrl}/api/trains`);
 
-/**
- * @description This function runs on the server for each request.
- * It provides train data for rendering the page.
- * @returns {Promise<{ props: TrainsPageProps }>} Page properties.
- */
-export const getServerSideProps: GetServerSideProps<TrainsPageProps> = async (context) => {
-  // Simulate a small API response delay
-  await new Promise(resolve => setTimeout(resolve, 50)); // 50ms delay
-  return {
-    props: {
-      trains: mockTrains,
-    },
-  };
+    if (!response.ok) {
+      // If the API response is not successful (e.g., 500 error from the API)
+      throw new Error(`Failed to fetch trains, status: ${response.status}`);
+    }
+
+    const trainsData: TrainTicket[] = await response.json();
+
+    return {
+      props: {
+        trains: trainsData,
+      },
+    };
+  } catch (err) {
+    console.error("Error in getServerSideProps for trains:", err);
+    // Send error to the client for display
+    const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+    return {
+      props: {
+        trains: [],
+        error: errorMessage,
+      },
+    };
+  }
 };
 
 export default TrainsPage;
