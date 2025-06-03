@@ -1,5 +1,5 @@
 // src/styles/pages/TicketDetails.module.scss
-@use '@/styles/variables' as *;
+@use "@/styles/variables" as *;
 
 .detailsContainer {
   padding-top: 5rem;
@@ -30,7 +30,7 @@
   background-color: #fff;
   padding: 2rem;
   border-radius: $border-radius * 2;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
 
   .infoRow {
@@ -106,4 +106,20 @@
   color: $text-color;
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
+}
+.successMessageContainer {
+  text-align: center;
+  padding: 2rem;
+  background-color: lighten($success-color, 50%);
+  border: 1px solid $success-color;
+  border-radius: $border-radius;
+  margin-top: 2rem;
+
+  h3 {
+    color: $success-color;
+    margin-bottom: 1rem;
+  }
+  p {
+    margin-bottom: 1.5rem;
+  }
 }
