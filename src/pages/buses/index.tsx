@@ -50,7 +50,7 @@ const BusesPage = ({ buses, error }: BusesPageProps): JSX.Element => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps<BusesPageProps> = async (context) => {
+export const getServerSideProps: GetServerSideProps<BusesPageProps> = async (_context) => {
   try {
     // Base API URL - in a real application, this should be read from environment variables
     // On the server, we can use localhost and the application's port

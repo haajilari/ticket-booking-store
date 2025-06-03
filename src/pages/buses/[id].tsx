@@ -22,6 +22,7 @@ const formatDetailedDateTime = (dateString?: string): string => {
       day: "numeric",
     })}, ${date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
   } catch (e) {
+    console.log({ e });
     return "Invalid date format";
   }
 };
@@ -37,7 +38,7 @@ interface BusDetailPageProps {
  * @param {BusDetailPageProps} props - Page properties.
  * @returns {JSX.Element} The bus details page.
  */
-const BusDetailPage = ({ bus, error }: BusDetailPageProps): JSX.Element => {
+const BusDetailPage = ({ bus }: BusDetailPageProps): JSX.Element => {
   const { bookingStatus, bookingError, resetBookingState, ticketForBooking } =
     useBookingStore();
   // to prepare for the next booking, unless a booking is in progress.

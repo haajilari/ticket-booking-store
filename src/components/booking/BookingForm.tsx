@@ -24,7 +24,6 @@ const BookingForm = ({ ticket, initialQuantity = 1 }: BookingFormProps): JSX.Ele
     submitBooking,
     bookingStatus,
     bookingError,
-    resetBookingState,
   } = useBookingStore();
 
   // Local state for form fields and local errors
