@@ -27,12 +27,12 @@ interface BookingState {
  * @description Zustand store for managing the ticket booking process state.
  */
 export const useBookingStore = create<BookingState>((set, get) => ({
+  // Initial state values
   ticketForBooking: null,
   quantity: 1,
   userInfo: null,
   bookingStatus: "idle",
   bookingError: null,
-
   /**
    * @description Sets the ticket and quantity to start the booking process.
    * @param {Ticket} ticket - Ticket object.
@@ -42,7 +42,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     set({
       ticketForBooking: ticket,
       quantity: quantity,
-      bookingStatus: "idle",
+      bookingStatus: "idle", // With a new ticket selection, the status resets to initial
       bookingError: null,
     }),
 
@@ -53,8 +53,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
   updateUserInfo: (info) => set({ userInfo: info }),
 
   /**
-   * @description Simulates sending a booking request to the server.
-   * In the next module, this function will perform a real API call.
+   * @description Sends a booking request to the server API.
    */
   submitBooking: async () => {
     const { ticketForBooking, quantity, userInfo } = get();
@@ -62,39 +61,57 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     if (!ticketForBooking || !userInfo || quantity < 1) {
       set({
         bookingStatus: "failed",
-        bookingError: "Booking information is incomplete.",
+        bookingError: "Booking information is incomplete for server submission.",
       });
       return;
     }
 
     set({ bookingStatus: "loading", bookingError: null });
 
+    const bookingPayload = {
+      ticketId: ticketForBooking.id,
+      ticketType: ticketForBooking.type,
+      companyName: ticketForBooking.companyName,
+      origin: ticketForBooking.origin,
+      destination: ticketForBooking.destination,
+      quantity,
+      userName: userInfo.name,
+      userEmail: userInfo.email,
+      totalPrice: ticketForBooking.price * quantity,
+    };
+
     try {
-      // Simulate API call
-      console.log("Store: Sending booking request to API with data:", {
-        ticketId: ticketForBooking.id,
-        ticketType: ticketForBooking.type,
-        company: ticketForBooking.companyName,
-        origin: ticketForBooking.origin,
-        destination: ticketForBooking.destination,
-        quantity,
-        userName: userInfo.name,
-        userEmail: userInfo.email,
-        totalPrice: ticketForBooking.price * quantity,
+      const response = await fetch("/api/booking", {
+        // Our API Route address
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookingPayload),
       });
 
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
+      const responseData = await response.json(); // Always try to read the response
 
-      // Assume the API responds successfully
-      // const response = await bookingApi.submit({ ticketId: ticketForBooking.id, quantity, userInfo });
+      if (!response.ok) {
+        // If the server response indicates an error (e.g., 400, 500)
+        // responseData may include an error message from the server
+        throw new Error(
+          responseData.message || `Server responded with ${response.status}`
+        );
+      }
+
+      // Successful response from the server (e.g., 201)
+      // responseData will include bookingId and other details.
+      console.log("Store: Booking successful! API Response:", responseData);
       set({ bookingStatus: "succeeded", bookingError: null });
-      console.log("Store: Booking successful!");
+      // Here, responseData.bookingId could be stored in the store if needed
     } catch (error) {
-      console.error("Store: Booking failed:", error);
-      const message = error instanceof Error ? error.message : "Unknown server error";
+      console.error("Store: Booking submission failed:", error);
+      const message =
+        error instanceof Error ? error.message : "Unknown error in server communication";
       set({
         bookingStatus: "failed",
-        bookingError: `Error in booking process: ${message}`,
+        bookingError: `Error in booking registration: ${message}`,
       });
     }
   },
