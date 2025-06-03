@@ -6,6 +6,8 @@
   background-color: $primary-color;
   padding: 1rem 0;
   color: $text-color-light;
+  position: fixed;
+  width: 100vw;
 
   .headerContainer {
     display: flex;
@@ -44,7 +46,7 @@
   // Header Desktop
   @media (min-width: $breakpoint-md) {
     .headerContainer {
-      flex-direction: row; 
+      flex-direction: row;
       justify-content: space-between;
     }
 
