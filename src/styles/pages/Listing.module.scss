@@ -1,0 +1,34 @@
+// src/styles/pages/Listing.module.scss
+@use "@/styles/variables" as *;
+
+.listingContainer {
+  padding-top: 5rem;
+  padding-bottom: 2rem;
+}
+
+.pageTitle {
+  font-size: 2.2rem;
+  color: $primary-color;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 600;
+
+  @media (max-width: $breakpoint-md) {
+    font-size: 1.8rem;
+  }
+}
+
+.ticketList {
+  // Specific styles for the list itself if needed
+  // Cards already have their own margin-bottom styles
+}
+
+.noResults {
+  text-align: center;
+  font-size: 1.1rem;
+  color: $secondary-color;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: $border-radius;
+  border: 1px dashed #ddd;
+}

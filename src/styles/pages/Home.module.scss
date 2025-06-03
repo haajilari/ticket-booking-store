@@ -1,0 +1,78 @@
+// src/styles/pages/Home.module.scss
+@use "@/styles/variables" as *;
+
+.homeContainer {
+  padding-top: 12rem;
+  padding-bottom: 2rem;
+  text-align: center;
+}
+
+.heroSection {
+  margin-bottom: 3rem;
+
+  h1 {
+    font-size: 2.5rem;
+    color: $primary-color;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+
+    @media (max-width: $breakpoint-md) {
+      font-size: 2rem;
+    }
+  }
+
+  .description {
+    font-size: 1.2rem;
+    color: $secondary-color;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+
+    @media (max-width: $breakpoint-md) {
+      font-size: 1rem;
+    }
+  }
+}
+
+.navigationCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+
+  .card {
+    display: block;
+    background-color: #fff;
+    padding: 2rem 1.5rem;
+    border-radius: $border-radius * 2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    text-align: center;
+    color: $text-color;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      text-decoration: none;
+    }
+
+    span {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      color: $primary-color;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+      color: $secondary-color;
+      line-height: 1.5;
+    }
+  }
+}
