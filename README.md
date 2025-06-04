@@ -1,40 +1,143 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Next.js Ticket Booking Store
+
+This project is a comprehensive ticket booking store for flights, trains, and buses, built with Next.js and TypeScript. It was developed as part of a step-by-step tutorial to demonstrate various features and best practices of the Next.js framework.
+
+## Description
+
+The application allows users to browse different types of tickets, view details for specific tickets, and simulate a booking process. It showcases Server-Side Rendering (SSR) for dynamic content, Static Site Generation (SSG) for static pages, API route handling for backend logic, and Progressive Web App (PWA) features.
+
+## Features Implemented
+
+- **Core Next.js Features**:
+  - Pages Router for file-system based routing.
+  - Server-Side Rendering (SSR) with `getServerSideProps` for ticket listing pages.
+  - Static Site Generation (SSG) with `getStaticProps` for the homepage.
+  - API Routes for backend logic (fetching data, simulating bookings).
+  - Dynamic Routes for individual ticket detail pages and specific API endpoints.
+  - Custom `_app.tsx` for global layouts and styles.
+  - Custom `_document.tsx` for augmenting the HTML structure.
+- **TypeScript**: Full TypeScript support for type safety and improved developer experience.
+- **Styling**:
+  - Sass for advanced CSS preprocessing.
+  - CSS Modules for component-scoped styles.
+  - Mobile-First design approach.
+- **State Management**: Global state management using Zustand for handling the booking process.
+- **Progressive Web App (PWA)**:
+  - `manifest.json` for application metadata.
+  - Service Worker registration and caching strategies via `next-pwa`.
+  - "Add to Home Screen" support.
+- **Mock Backend**: API routes to serve mock ticket data and simulate booking submissions.
+- **Documentation**: JSDoc comments for components, functions, and API routes.
+- **Unit Testing**: Setup for unit tests using Jest and React Testing Library, with example tests for components and API routes.
+
+## Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **UI Library**: [React](https://react.dev/)
+- **Styling**: [Sass](https://sass-lang.com/), CSS Modules
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **PWA**: [next-pwa](https://github.com/shadowwalker/next-pwa)
+- **Testing**: [Jest](https://jestjs.io/), [React Testing Library](https://testing-library.com/docs/react-testing-library/intro)
+- **Linting**: ESLint (configured by Next.js)
+
+## Project Structure
+
+The project follows a standard Next.js structure with the main application code residing in the `src/` directory:
+
+- `src/components/`: Reusable React components.
+- `src/pages/`: Application pages and API routes.
+  - `src/pages/api/`: Backend API endpoints.
+- `src/store/`: Zustand store for global state management.
+- `src/styles/`: Global styles, Sass variables, and page/component-specific styles.
+- `src/types/`: TypeScript type definitions.
+- `public/`: Static assets, including PWA icons and `manifest.json`.
+- `__tests__/` (within component/page directories): Unit test files.
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18.x or later recommended)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
 ## Getting Started
 
-First, run the development server:
+To get a local copy up and running, follow these simple steps:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1.  **Clone the repository (if applicable)**
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    ```bash
+    # git clone <repository-url>
+    # cd ticket-booking-store
+    ```
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+2.  **Install Dependencies**
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+    ```bash
+    npm install
+    # or
+    # yarn install
+    ```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+3.  **Run the Development Server**
+    The application will be available at `http://localhost:3000`.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    ```bash
+    npm run dev
+    # or
+    # yarn dev
+    ```
 
-## Learn More
+4.  **Build for Production**
 
-To learn more about Next.js, take a look at the following resources:
+    ```bash
+    npm run build
+    # or
+    # yarn build
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+5.  **Run in Production Mode**
+    The application will start in production mode (requires a build first).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    ```bash
+    npm start
+    # or
+    # yarn start
+    ```
 
-## Deploy on Vercel
+6.  **Run Tests**
+    ```bash
+    npm test
+    # or to run in watch mode:
+    # npm run test:watch
+    # or for coverage report:
+    # npm run test:cov
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Key Next.js Concepts Covered
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+This project provides practical examples of the following Next.js concepts:
+
+- **Pages Router**: File-system routing within the `pages` directory.
+- **Data Fetching**:
+  - `getStaticProps` for Static Site Generation (SSG).
+  - `getServerSideProps` for Server-Side Rendering (SSR).
+- **API Routes**: Creating backend endpoints within `pages/api`.
+- **Dynamic Routing**: Creating pages and API routes with dynamic segments (e.g., `[id].tsx`).
+- **Custom App (`_app.tsx`)**: Initializing pages, global layouts.
+- **Custom Document (`_document.tsx`)**: Modifying `<html>` and `<body>` tags, adding PWA meta tags.
+- **`next/head`**: Managing document head elements per page for SEO and metadata.
+- **`next/link`**: Client-side navigation between pages.
+- **PWA Support**: Leveraging `next-pwa` for Service Worker and manifest generation.
+
+## Potential Future Enhancements
+
+- Implement a real database (e.g., PostgreSQL, MongoDB) instead of mock data.
+- Add user authentication and authorization (e.g., NextAuth.js).
+- Integrate a payment gateway for actual bookings.
+- Expand test coverage with more unit tests, integration tests, and E2E tests (e.g., using Cypress or Playwright).
+- Refactor to use the Next.js App Router and Server Components.
+- Implement more advanced PWA features like push notifications or more sophisticated offline strategies.
+
+---
+
+This project was built as part of a guided tutorial to learn and demonstrate Next.js capabilities.
